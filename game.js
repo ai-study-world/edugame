@@ -322,8 +322,10 @@
   // ---------- 付费解锁系统 ----------
   const UNLOCK_KEY = 'edugame_unlocked';
   // Supabase 云端多码（真防转发）；未配置时回退本地单码
-  const SUPABASE_URL = '';   // 从 supabase.md 读取后填入，如 https://xxx.supabase.co
-  const SUPABASE_ANON_KEY = '';
+  const SUPABASE_RAW_URL = 'https://zlqszighrxjrifxndohn.supabase.co/rest/v1/';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpscXN6aWdocnhqcmlmeG5kb2huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc4MDkxNjUsImV4cCI6MjEwMzM4NTE2NX0.lsOdlyk_Nz8v2zvNgvHYhm_tOOxWcaaJiNpKKR_6ER0';
+  // URL 归一化：兼容有无 /rest/v1/ 尾部的两种填法
+  const SUPABASE_URL = SUPABASE_RAW_URL.replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '');
   const UNLOCK_CODE = '9.9HAPPY';  // 本地回退解锁码（Supabase 未配置时用）
   const FREE_GAMES = ['count', 'colors', 'shapes'];  // 免费游戏：数一数、认识颜色、认图形颜色
   function isUnlocked() { return localStorage.getItem(UNLOCK_KEY) === '1'; }
