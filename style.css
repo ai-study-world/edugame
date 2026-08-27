@@ -143,6 +143,7 @@ body {
 .option-btn:hover { border-color: var(--blue); transform: translateY(-3px); box-shadow: 0 8px 18px rgba(79,195,247,.25); }
 .option-btn:active { transform: scale(.93); }
 .option-btn.correct { background: #e8f5e9; border-color: var(--green); animation: pop .4s; }
+.option-btn.correct-highlight { background: #e8f5e9; border-color: var(--green); box-shadow: 0 0 0 4px rgba(76,175,80,.25); animation: pop .4s; }
 .option-btn.wrong { background: #ffebee; border-color: #ef5350; animation: shake .4s; }
 .option-btn.disabled { pointer-events: none; opacity: .75; }
 @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
@@ -481,3 +482,11 @@ body {
   .dir-grid { grid-template-columns: repeat(3, 68px); }
   .dir-cell { width: 68px; height: 68px; font-size: 1.8rem; }
 }
+/* ===== 答错高亮正确答案 ===== */
+.season-opt.correct-highlight { background: #e8f5e9; border-color: var(--green); box-shadow: 0 0 0 4px rgba(76,175,80,.25); animation: pop .4s; }
+.shape-opt.correct-highlight { background: #e8f5e9; border-color: var(--green); box-shadow: 0 0 0 4px rgba(76,175,80,.25); animation: pop .4s; }
+.hanzi-opt.correct-highlight { background: #e8f5e9; border-color: var(--green); box-shadow: 0 0 0 4px rgba(76,175,80,.25); animation: pop .4s; }
+.money-opt.correct-highlight { background: #e8f5e9; border-color: var(--green); box-shadow: 0 0 0 4px rgba(76,175,80,.25); animation: pop .4s; }
+.pattern-opt.correct-highlight { background: #e0f2f1; border-color: #26a69a; box-shadow: 0 0 0 4px rgba(38,166,154,.25); animation: pop .4s; }
+.match-slot.matched-highlight { border-color: var(--green); border-style: solid; background: #e8f5e9; color: var(--green-dark); }
+.shadow-item.matched-highlight { border-color: var(--green); border-style: solid; background: #e8f5e9; }

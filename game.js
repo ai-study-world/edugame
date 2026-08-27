@@ -326,6 +326,38 @@
     return a;
   }
 
+  /**
+   * 答错统一处理：标红错误项 + 标绿正确答案 + 禁用点击 + 短暂停顿后自动进入下一题
+   * @param {HTMLElement} wrongEl 用户点错的元素
+   * @param {string|Function} correctSelector 正确答案选择器（CSS选择器字符串）或查找正确元素的函数
+   * @param {Function} next 进入下一题的回调
+   * @param {number} delay 停顿毫秒数（默认 1400）
+   */
+  function handleWrong(wrongEl, correctSelector, next, delay = 1400) {
+    wrongEl.classList.add('wrong');
+    sfx.wrong();
+    // 标绿正确答案（支持选择器字符串或查找函数）
+    let correctEl = null;
+    if (typeof correctSelector === 'function') {
+      correctEl = correctSelector();
+    } else if (wrongEl.parentElement && wrongEl.closest('#gameArea')) {
+      correctEl = wrongEl.closest('#gameArea').querySelector(correctSelector);
+    }
+    if (correctEl) {
+      correctEl.classList.add('correct-highlight');
+      correctEl.classList.add('disabled');
+    }
+    // 禁用所有可点击项，防止小孩继续点
+    gameArea.querySelectorAll('.option-btn, .season-opt, .shape-opt, .hanzi-opt, .pattern-opt, .money-opt, .match-slot, .shadow-item, .count-check')
+      .forEach(b => b.classList.add('disabled'));
+    // 短暂停顿后自动跳下一题
+    setTimeout(() => {
+      wrongEl.classList.remove('wrong');
+      if (correctEl) correctEl.classList.remove('correct-highlight');
+      next();
+    }, delay);
+  }
+
   // ============================================================
   // 游戏1：口算小达人
   // ============================================================
@@ -364,9 +396,12 @@
             else renderMath();
           }, 600);
         } else {
-          btn.classList.add('wrong');
-          sfx.wrong();
-          setTimeout(() => btn.classList.remove('wrong'), 500);
+          // 答错：标红 + 展示正确答案 + 自动跳下一题
+          handleWrong(btn, `.option-btn[data-ans="${q.ans}"]`, () => {
+            math.round++;
+            if (math.round >= math.total) mathEnd();
+            else renderMath();
+          });
         }
       };
     });
@@ -411,7 +446,22 @@
     });
     gameArea.querySelector('.count-check').onclick = () => {
       const val = parseInt(input.value, 10);
-      if (isNaN(val)) { sfx.wrong(); return; }
+      if (isNaN(val)) {
+        // 空输入：提示后也自动跳下一题，避免卡住
+        sfx.wrong();
+        input.style.borderColor = '#ef5350';
+        input.disabled = true;
+        const hint = document.createElement('div');
+        hint.style.cssText = 'text-align:center;margin-top:8px;font-size:1.1rem;color:#2e7d32;font-weight:700;';
+        hint.textContent = `正确答案是 ${count.fishCount} 个哦`;
+        input.parentElement.appendChild(hint);
+        setTimeout(() => {
+          count.round++;
+          if (count.round >= count.total) countEnd();
+          else renderCount();
+        }, 1400);
+        return;
+      }
       if (val === count.fishCount) {
         sfx.correct();
         gameArea.querySelectorAll('.fish').forEach(f => f.classList.add('answered'));
@@ -423,12 +473,22 @@
           else renderCount();
         }, 700);
       } else {
+        // 答错：标红 + 提示正确数量 + 自动跳下一题
         sfx.wrong();
         input.style.borderColor = '#ef5350';
-        setTimeout(() => { input.style.borderColor = ''; }, 600);
-        if (val < count.fishCount) input.placeholder = '再数数，好像更多哦';
-        else input.placeholder = '是不是数多了呀';
-        input.value = '';
+        input.disabled = true;
+        // 正确数量高亮显示
+        const hint = document.createElement('div');
+        hint.style.cssText = 'text-align:center;margin-top:8px;font-size:1.1rem;color:#2e7d32;font-weight:700;';
+        hint.textContent = `正确答案是 ${count.fishCount} 个哦`;
+        input.parentElement.appendChild(hint);
+        // 清空选中的小鱼，标绿正确数量
+        gameArea.querySelectorAll('.fish').forEach(f => f.classList.remove('selected'));
+        setTimeout(() => {
+          count.round++;
+          if (count.round >= count.total) countEnd();
+          else renderCount();
+        }, 1400);
       }
     };
   }
@@ -513,10 +573,23 @@
             else renderPinyin();
           }, 700);
         } else {
+          // 答错：标绿正确组合 + 自动跳下一题
           el.classList.add('wrong-flash');
           selL.classList.remove('selected');
-          setTimeout(() => el.classList.remove('wrong-flash'), 500);
+          // 高亮正确的声母和韵母
+          gameArea.querySelectorAll('.match-slot.left').forEach(x => {
+            if (x.dataset.val === target) x.classList.add('matched-highlight');
+          });
+          gameArea.querySelectorAll('.match-slot.right').forEach(x => {
+            if (x.dataset.val === pair.y) x.classList.add('matched-highlight');
+          });
+          gameArea.querySelectorAll('.match-slot').forEach(x => x.style.pointerEvents = 'none');
           sfx.wrong();
+          setTimeout(() => {
+            pinyin.round++;
+            if (pinyin.round >= pinyin.total) pinyinEnd();
+            else renderPinyin();
+          }, 1500);
         }
       };
     });
@@ -684,9 +757,12 @@
             else renderClock();
           }, 600);
         } else {
-          btn.classList.add('wrong');
-          sfx.wrong();
-          setTimeout(() => btn.classList.remove('wrong'), 500);
+          // 答错：标红 + 展示正确答案 + 自动跳下一题
+          handleWrong(btn, `.option-btn[data-h="${clock.hour}"][data-m="${clock.minute}"]`, () => {
+            clock.round++;
+            if (clock.round >= clock.total) clockEnd();
+            else renderClock();
+          });
         }
       };
     });
@@ -767,6 +843,7 @@
     const diffs = spotSceneDiffs(W, H);
     spot.diffs = diffs;
     spot.found = 0;
+    spot.missCount = 0;
     spot.totalDiff = diffs.length;
     spot.current = { W, H, diffs };
     gameArea.innerHTML = `
@@ -822,9 +899,30 @@
           }, 700);
         }
       } else {
+        // 点错位置：累计，连续错 5 次自动展示答案并跳题
+        spot.missCount = (spot.missCount || 0) + 1;
         sfx.wrong();
         e.target.style.borderColor = '#ef5350';
         setTimeout(() => e.target.style.borderColor = '', 400);
+        if (spot.missCount >= 5) {
+          // 自动展示所有剩余差异点
+          const panel = e.target.parentElement;
+          const rect = e.target.getBoundingClientRect();
+          spot.diffs.forEach(([dx, dy]) => {
+            const bubble = document.createElement('div');
+            bubble.className = 'spot-bubble';
+            bubble.textContent = '✓';
+            bubble.style.left = (dx / W * rect.width - 13) + 'px';
+            bubble.style.top = (dy / H * rect.height - 13) + 'px';
+            panel.appendChild(bubble);
+          });
+          e.target.style.pointerEvents = 'none';
+          setTimeout(() => {
+            spot.round++;
+            if (spot.round >= spot.total) spotEnd();
+            else renderSpot();
+          }, 1500);
+        }
       }
     });
   }
@@ -888,9 +986,12 @@
             else renderHanzi();
           }, 700);
         } else {
-          btn.classList.add('wrong');
-          sfx.wrong();
-          setTimeout(() => btn.classList.remove('wrong'), 500);
+          // 答错：标红 + 展示正确答案 + 自动跳下一题
+          handleWrong(btn, `.hanzi-opt[data-char="${target.char}"]`, () => {
+            hanzi.round++;
+            if (hanzi.round >= hanzi.total) hanziEnd();
+            else renderHanzi();
+          });
         }
       };
     });
@@ -1002,9 +1103,12 @@
             else renderMoney();
           }, 700);
         } else {
-          btn.classList.add('wrong');
-          sfx.wrong();
-          setTimeout(() => btn.classList.remove('wrong'), 500);
+          // 答错：标红 + 展示正确答案 + 自动跳下一题
+          handleWrong(btn, () => [...gameArea.querySelectorAll('.money-opt')].find(b => b.dataset.ans === answerText) || null, () => {
+            money.round++;
+            if (money.round >= money.total) moneyEnd();
+            else renderMoney();
+          });
         }
       };
     });
@@ -1091,9 +1195,12 @@
             else renderPattern();
           }, 700);
         } else {
-          btn.classList.add('wrong');
-          sfx.wrong();
-          setTimeout(() => btn.classList.remove('wrong'), 500);
+          // 答错：标红 + 展示正确答案 + 自动跳下一题
+          handleWrong(btn, () => [...gameArea.querySelectorAll('.pattern-opt')].find(b => b.dataset.ans === String(answer)) || null, () => {
+            pattern.round++;
+            if (pattern.round >= pattern.total) patternEnd();
+            else renderPattern();
+          });
         }
       };
     });
@@ -1150,9 +1257,12 @@
             else renderSeason();
           }, 700);
         } else {
-          btn.classList.add('wrong');
-          sfx.wrong();
-          setTimeout(() => btn.classList.remove('wrong'), 500);
+          // 答错：标红 + 展示正确答案 + 自动跳下一题
+          handleWrong(btn, () => [...gameArea.querySelectorAll('.season-opt')].find(b => b.dataset.name === target.name) || null, () => {
+            season.round++;
+            if (season.round >= season.total) seasonEnd();
+            else renderSeason();
+          });
         }
       };
     });
@@ -1243,10 +1353,27 @@
             }, 700);
           }
         } else {
+          // 配错：标红 + 提示正确配对 + 自动跳下一题
           el.classList.add('wrong-flash');
           sel.classList.remove('selected');
-          setTimeout(() => el.classList.remove('wrong-flash'), 500);
+          // 高亮正确的配对项
+          const pairs = shadow.current ? shadow.current.items : null;
+          if (pairs) {
+            const rightName = sel.dataset.name;
+            gameArea.querySelectorAll('.shadow-item.shadow').forEach(x => {
+              if (x.dataset.name === rightName) x.classList.add('matched-highlight');
+            });
+            gameArea.querySelectorAll('.shadow-item.obj').forEach(x => {
+              if (x.dataset.name === rightName) x.classList.add('matched-highlight');
+            });
+          }
+          gameArea.querySelectorAll('.shadow-item').forEach(x => x.style.pointerEvents = 'none');
           sfx.wrong();
+          setTimeout(() => {
+            shadow.round++;
+            if (shadow.round >= shadow.total) shadowEnd();
+            else renderShadow();
+          }, 1500);
         }
       };
     });
@@ -1361,9 +1488,12 @@
             else renderShapes();
           }, 700);
         } else {
-          btn.classList.add('wrong');
-          sfx.wrong();
-          setTimeout(() => btn.classList.remove('wrong'), 500);
+          // 答错：标红 + 展示正确答案 + 自动跳下一题
+          handleWrong(btn, () => [...gameArea.querySelectorAll('.shape-opt')].find(b => b.dataset.ans === answerKey) || null, () => {
+            shapes.round++;
+            if (shapes.round >= shapes.total) shapesEnd();
+            else renderShapes();
+          });
         }
       };
     });
@@ -1440,9 +1570,12 @@
             else renderDirection();
           }, 700);
         } else {
-          btn.classList.add('wrong');
-          sfx.wrong();
-          setTimeout(() => btn.classList.remove('wrong'), 500);
+          // 答错：标红 + 展示正确答案 + 自动跳下一题
+          handleWrong(btn, () => [...gameArea.querySelectorAll('.option-btn')].find(b => b.dataset.ans === answerKey) || null, () => {
+            direction.round++;
+            if (direction.round >= direction.total) directionEnd();
+            else renderDirection();
+          });
         }
       };
     });
