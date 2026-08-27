@@ -60,6 +60,7 @@
   const modalText = $('#modalText');
   const modalBtn = $('#modalBtn');
   const modalBackBtn = $('#modalBackBtn');
+  const parentMenu = $('#parentMenu');
 
   // ---------- 音频（Web Audio 合成音效，无需外部文件） ----------
   let audioCtx = null;
@@ -2354,7 +2355,38 @@
     card.onclick = () => { ensureAudio(); sfx.click(); showGame(card.dataset.game); };
   });
   $('#backBtn').onclick = () => { sfx.click(); showMenu(); };
-  $('#reportBtn').onclick = () => { ensureAudio(); sfx.click(); showReport(); };
+  // 家长中心：reportBtn 打开弹层菜单
+  const openParentMenu = () => { ensureAudio(); sfx.click(); if (parentMenu) parentMenu.classList.remove('hidden'); };
+  const closeParentMenu = () => { if (parentMenu) parentMenu.classList.add('hidden'); };
+  const reportBtn = $('#reportBtn');
+  if (reportBtn) reportBtn.onclick = openParentMenu;
+  const parentReportBtn = $('#parentReportBtn');
+  if (parentReportBtn) parentReportBtn.onclick = () => { closeParentMenu(); showReport(); };
+  const parentResetBtn = $('#parentResetBtn');
+  if (parentResetBtn) parentResetBtn.onclick = () => {
+    closeParentMenu();
+    if (confirm('确定要清零所有星星吗？（学习记录保留）')) {
+      for (const k of Object.keys(stars)) delete stars[k];
+      saveStars(); refreshStars();
+      sfx.click();
+    }
+  };
+  const parentResetAllBtn = $('#parentResetAllBtn');
+  if (parentResetAllBtn) parentResetAllBtn.onclick = () => {
+    closeParentMenu();
+    if (confirm('确定要清除所有学习记录吗？（星星也会清零）')) {
+      for (const k of Object.keys(stats)) delete stats[k];
+      for (const k of Object.keys(stars)) delete stars[k];
+      saveStats(); saveStars(); refreshStars();
+      if (reportScreen.classList.contains('active')) renderReport();
+      sfx.click();
+    }
+  };
+  const parentMenuCancel = $('#parentMenuCancel');
+  if (parentMenuCancel) parentMenuCancel.onclick = closeParentMenu;
+  // 点击弹层背景关闭
+  if (parentMenu) parentMenu.addEventListener('click', (e) => { if (e.target === parentMenu) closeParentMenu(); });
+
   $('#reportBackBtn').onclick = () => { sfx.click(); showMenu(); };
   $('#reportResetBtn').onclick = () => {
     if (confirm('确定要清除所有学习记录吗？（星星也会清零）')) {
@@ -2365,7 +2397,8 @@
       sfx.click();
     }
   };
-  $('#resetBtn').onclick = () => {
+  const resetBtn = $('#resetBtn');
+  if (resetBtn) resetBtn.onclick = () => {
     if (confirm('确定要清零所有星星吗？（学习记录保留）')) {
       for (const k of Object.keys(stars)) delete stars[k];
       saveStars(); refreshStars();

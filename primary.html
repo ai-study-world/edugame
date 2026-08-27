@@ -19,7 +19,7 @@
   <div class="star-total">⭐ 我的星星：<span id="totalStars">0</span></div>
   <div class="page-actions">
     <a class="btn back-btn" href="index.html">🏠 返回首页</a>
-    <button class="btn report-btn" id="reportBtn">📊 学习报告</button>
+    <button class="btn parent-btn" id="reportBtn">👨‍👩‍👧 家长中心</button>
   </div>
   <div class="menu-grid">
     <div class="card" data-game="math">
@@ -89,8 +89,16 @@
       <div class="card-stars" id="stars-map">☆☆☆</div>
     </div>
   </div>
-  <div class="menu-actions">
-    <button class="btn reset-btn" id="resetBtn">🔄 重置星星</button>
+</div>
+
+<!-- ===== 家长中心弹层（菜单） ===== -->
+<div id="parentMenu" class="parent-menu hidden">
+  <div class="parent-menu-box">
+    <div class="parent-menu-title">👨‍👩‍👧 家长中心</div>
+    <button class="parent-menu-item" id="parentReportBtn">📊 学习报告</button>
+    <button class="parent-menu-item danger" id="parentResetBtn">🔄 重置星星</button>
+    <button class="parent-menu-item danger" id="parentResetAllBtn">🗑️ 清除全部记录</button>
+    <button class="parent-menu-item cancel" id="parentMenuCancel">✖ 关闭</button>
   </div>
 </div>
 

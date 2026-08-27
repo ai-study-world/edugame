@@ -14,31 +14,53 @@
     <div class="cloud c1"></div>
     <div class="cloud c2"></div>
   </div>
-  <h1 class="title">🌈 趣味学习乐园</h1>
-  <p class="subtitle">幼小衔接 · 边玩边学 · 共 21 个趣味小游戏</p>
-  <div class="star-total">⭐ 我的星星：<span id="totalStars">0</span></div>
+
+  <header class="home-header">
+    <div class="home-logo">🌈</div>
+    <h1 class="title">趣味学习乐园</h1>
+    <p class="subtitle">幼小衔接 · 边玩边学 · 共 21 个趣味小游戏</p>
+    <div class="home-stars">
+      <span class="home-stars-icon">⭐</span>
+      <span class="home-stars-num" id="totalStars">0</span>
+      <span class="home-stars-label">颗星星</span>
+    </div>
+  </header>
 
   <!-- 分类入口 -->
   <div class="category-grid">
     <a class="category-card cat-preschool" href="preschool.html">
-      <div class="category-emoji">🧸</div>
-      <div class="category-name">幼儿学习启蒙</div>
-      <div class="category-desc">适合 3-5 岁</div>
-      <div class="category-games">数数 · 颜色 · 动物叫声 · 找不同 · 行为判断 …</div>
-      <div class="category-btn">进入学习 →</div>
+      <div class="category-card-inner">
+        <div class="category-emoji">🧸</div>
+        <div class="category-name">幼儿学习启蒙</div>
+        <div class="category-desc">适合 3-5 岁</div>
+        <div class="category-games">数数 · 颜色 · 动物叫声 · 找不同 · 行为判断 · 亲属称谓</div>
+        <div class="category-btn">进入学习 →</div>
+      </div>
     </a>
     <a class="category-card cat-primary" href="primary.html">
-      <div class="category-emoji">🎒</div>
-      <div class="category-name">幼小衔接教学</div>
-      <div class="category-desc">适合 5-7 岁</div>
-      <div class="category-games">口算 · 拼音 · 汉字 · 钟表 · 人民币 · 古诗 …</div>
-      <div class="category-btn">进入学习 →</div>
+      <div class="category-card-inner">
+        <div class="category-emoji">🎒</div>
+        <div class="category-name">幼小衔接教学</div>
+        <div class="category-desc">适合 5-7 岁</div>
+        <div class="category-games">口算 · 拼音 · 汉字 · 钟表 · 人民币 · 古诗 · 地图</div>
+        <div class="category-btn">进入学习 →</div>
+      </div>
     </a>
   </div>
 
-  <div class="menu-actions">
-    <button class="btn report-btn" id="reportBtn">📊 家长学习报告</button>
-    <button class="btn reset-btn" id="resetBtn">🔄 重置星星</button>
+  <footer class="home-footer">
+    <button class="btn parent-btn" id="reportBtn">👨‍👩‍👧 家长中心</button>
+  </footer>
+</div>
+
+<!-- ===== 家长中心弹层（菜单） ===== -->
+<div id="parentMenu" class="parent-menu hidden">
+  <div class="parent-menu-box">
+    <div class="parent-menu-title">👨‍👩‍👧 家长中心</div>
+    <button class="parent-menu-item" id="parentReportBtn">📊 学习报告</button>
+    <button class="parent-menu-item danger" id="parentResetBtn">🔄 重置星星</button>
+    <button class="parent-menu-item danger" id="parentResetAllBtn">🗑️ 清除全部记录</button>
+    <button class="parent-menu-item cancel" id="parentMenuCancel">✖ 关闭</button>
   </div>
 </div>
 
