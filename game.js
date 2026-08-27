@@ -20,6 +20,8 @@
     shadow:  { name: '找影子',     desc: '影子配对' },
     shapes:  { name: '认图形颜色', desc: '图形颜色认知' },
     direction: { name: '找方向',   desc: '方位判断' },
+    family:  { name: '亲属称谓',   desc: '家人怎么称呼' },
+    behavior: { name: '行为判断',   desc: '什么行为不对' },
   };
   const STAR_KEY = 'edugame_stars';
   const STATS_KEY = 'edugame_stats';
@@ -138,6 +140,8 @@
     { key: 'memory',  name: '记忆观察', games: ['memory', 'spot'] },
     { key: 'logic',   name: '逻辑推理', games: ['pattern', 'direction'] },
     { key: 'nature',  name: '自然认知', games: ['season', 'shadow', 'shapes'] },
+    { key: 'social',  name: '社会认知', games: ['family'] },
+    { key: 'habit',   name: '行为习惯', games: ['behavior'] },
   ];
   // 计算各维度得分（0-100）
   function dimensionScores() {
@@ -257,7 +261,7 @@
       const s = stats[g];
       const rate = statRate(g);
       const avgT = statAvgTime(g);
-      return { g, icon: { math: '🔢', count: '🐟', pinyin: '🔤', memory: '🧠', clock: '⏰', spot: '🔍', hanzi: '🀄', money: '💰', pattern: '🔢', season: '🍂', shadow: '🌓', shapes: '🔷', direction: '🧭' }[g], s, rate, avgT };
+      return { g, icon: { math: '🔢', count: '🐟', pinyin: '🔤', memory: '🧠', clock: '⏰', spot: '🔍', hanzi: '🀄', money: '💰', pattern: '🔢', season: '🍂', shadow: '🌓', shapes: '🔷', direction: '🧭', family: '👨‍👩‍👧', behavior: '✅' }[g], s, rate, avgT };
     });
     $('#reportList').innerHTML = rows.map(r => {
       if (!r.s || r.s.plays === 0) {
@@ -1592,6 +1596,157 @@
       `答对 ${direction.correct} / ${direction.total} 题`, s, () => { direction.round = 0; direction.correct = 0; renderDirection(); });
   }
 
+  // ============================================================
+  // 游戏14：亲属称谓（爸爸的爸爸叫什么）
+  // ============================================================
+  let family = { round: 0, total: 6, correct: 0 };
+
+  const FAMILY_DATA = [
+    { rel: '爸爸的爸爸', ans: '爷爷' },
+    { rel: '爸爸的妈妈', ans: '奶奶' },
+    { rel: '妈妈的爸爸', ans: '外公' },
+    { rel: '妈妈的妈妈', ans: '外婆' },
+    { rel: '爸爸的哥哥', ans: '伯伯' },
+    { rel: '爸爸的弟弟', ans: '叔叔' },
+    { rel: '爸爸的姐姐', ans: '姑姑' },
+    { rel: '爸爸的妹妹', ans: '姑姑' },
+    { rel: '妈妈的哥哥', ans: '舅舅' },
+    { rel: '妈妈的弟弟', ans: '舅舅' },
+    { rel: '妈妈的姐姐', ans: '姨妈' },
+    { rel: '妈妈的妹妹', ans: '姨妈' },
+    { rel: '爷爷的儿子', ans: '爸爸' },
+    { rel: '外婆的女儿', ans: '妈妈' },
+  ];
+  const FAMILY_OPTIONS = ['爷爷', '奶奶', '外公', '外婆', '伯伯', '叔叔', '姑姑', '舅舅', '姨妈', '爸爸', '妈妈'];
+
+  function renderFamily() {
+    const target = FAMILY_DATA[randInt(0, FAMILY_DATA.length - 1)];
+    const others = shuffle(FAMILY_OPTIONS.filter(o => o !== target.ans)).slice(0, 3);
+    const options = shuffle([target.ans, ...others]);
+    gameArea.innerHTML = `
+      <div class="game-hint">第 ${family.round + 1} / ${family.total} 题</div>
+      <div class="hanzi-quiz">
+        <div class="hanzi-pic">👨‍👩‍👧</div>
+        <div class="game-hint">「${target.rel}」应该叫什么？</div>
+        <div class="hanzi-options">
+          ${options.map(d => `<button class="hanzi-opt" data-ans="${d}"><span class="hz" style="font-size:1.6rem">${d}</span>${d}</button>`).join('')}
+        </div>
+      </div>
+    `;
+    gameArea.querySelectorAll('.hanzi-opt').forEach(btn => {
+      btn.onclick = () => {
+        sfx.click();
+        if (btn.dataset.ans === target.ans) {
+          btn.classList.add('correct');
+          family.correct++;
+          sfx.correct();
+          gameArea.querySelectorAll('.hanzi-opt').forEach(b => b.classList.add('disabled'));
+          setTimeout(() => {
+            family.round++;
+            if (family.round >= family.total) familyEnd();
+            else renderFamily();
+          }, 700);
+        } else {
+          // 答错：标红 + 展示正确答案 + 自动跳下一题（与 family 共用的样式）
+          handleWrong(btn, () => [...gameArea.querySelectorAll('.hanzi-opt')].find(b => b.dataset.ans === target.ans) || null, () => {
+            family.round++;
+            if (family.round >= family.total) familyEnd();
+            else renderFamily();
+          });
+        }
+      };
+    });
+  }
+
+  function familyEnd() {
+    const rate = family.correct / family.total;
+    let s = 1;
+    if (rate >= 0.9) s = 3; else if (rate >= 0.7) s = 2;
+    addStar('family', s);
+    recordGame('family', family.correct, family.total, Date.now() - gameStartTime);
+    showModal(rate >= 0.9 ? '👨‍👩‍👧' : rate >= 0.7 ? '🌟' : '💪',
+      rate >= 0.9 ? '家庭小百科！' : rate >= 0.7 ? '很棒！' : '回家问问',
+      `答对 ${family.correct} / ${family.total} 题`, s, () => { family.round = 0; family.correct = 0; renderFamily(); });
+  }
+
+  // ============================================================
+  // 游戏15：行为判断（哪些行为不对）
+  // ============================================================
+  let behavior = { round: 0, total: 8, correct: 0 };
+
+  const BEHAVIOR_DATA = [
+    { scene: '红灯亮了，还要过马路', good: false },
+    { scene: '公交车上给老爷爷让座', good: true },
+    { scene: '把垃圾扔进垃圾桶', good: true },
+    { scene: '抢小朋友的玩具', good: false },
+    { scene: '见到老师说"老师好"', good: true },
+    { scene: '在图书馆里大声喊叫', good: false },
+    { scene: '吃饭前先洗手', good: true },
+    { scene: '打人、骂人', good: false },
+    { scene: '自己穿衣服、系鞋带', good: true },
+    { scene: '把玩具扔得到处都是', good: false },
+    { scene: '帮妈妈做家务', good: true },
+    { scene: '摘公园里的花', good: false },
+    { scene: '排队不插队', good: true },
+    { scene: '浪费粮食，饭菜乱倒', good: false },
+    { scene: '别人说话时不插嘴', good: true },
+    { scene: '乱按电梯按钮玩', good: false },
+  ];
+
+  function renderBehavior() {
+    const target = BEHAVIOR_DATA[randInt(0, BEHAVIOR_DATA.length - 1)];
+    const options = shuffle([
+      { label: '✅ 对', val: 'good' },
+      { label: '❌ 不对', val: 'bad' },
+    ]);
+    gameArea.innerHTML = `
+      <div class="game-hint">第 ${behavior.round + 1} / ${behavior.total} 题</div>
+      <div class="season-quiz">
+        <span class="season-big">🤔</span>
+        <div class="game-hint">「${target.scene}」这样做对吗？</div>
+        <div class="season-options">
+          ${options.map(d => `<button class="season-opt" data-ans="${d.val}"><span class="se-icon" style="font-size:1.8rem">${d.label}</span><span class="se-name">${d.label}</span></button>`).join('')}
+        </div>
+      </div>
+    `;
+    gameArea.querySelectorAll('.season-opt').forEach(btn => {
+      btn.onclick = () => {
+        sfx.click();
+        const isGood = btn.dataset.ans === 'good';
+        if (isGood === target.good) {
+          btn.classList.add('correct');
+          behavior.correct++;
+          sfx.correct();
+          gameArea.querySelectorAll('.season-opt').forEach(b => b.classList.add('disabled'));
+          setTimeout(() => {
+            behavior.round++;
+            if (behavior.round >= behavior.total) behaviorEnd();
+            else renderBehavior();
+          }, 700);
+        } else {
+          // 答错：标红 + 展示正确答案 + 自动跳下一题
+          const correctVal = target.good ? 'good' : 'bad';
+          handleWrong(btn, () => [...gameArea.querySelectorAll('.season-opt')].find(b => b.dataset.ans === correctVal) || null, () => {
+            behavior.round++;
+            if (behavior.round >= behavior.total) behaviorEnd();
+            else renderBehavior();
+          });
+        }
+      };
+    });
+  }
+
+  function behaviorEnd() {
+    const rate = behavior.correct / behavior.total;
+    let s = 1;
+    if (rate >= 0.9) s = 3; else if (rate >= 0.7) s = 2;
+    addStar('behavior', s);
+    recordGame('behavior', behavior.correct, behavior.total, Date.now() - gameStartTime);
+    showModal(rate >= 0.9 ? '🌟' : rate >= 0.7 ? '👍' : '💪',
+      rate >= 0.9 ? '行为小标兵！' : rate >= 0.7 ? '很不错！' : '多看看',
+      `答对 ${behavior.correct} / ${behavior.total} 题`, s, () => { behavior.round = 0; behavior.correct = 0; renderBehavior(); });
+  }
+
   // ---------- 渲染器注册 ----------
   const renderers = {
     math: renderMath,
@@ -1607,6 +1762,8 @@
     shadow: renderShadow,
     shapes: renderShapes,
     direction: renderDirection,
+    family: renderFamily,
+    behavior: renderBehavior,
   };
 
   // ---------- 事件绑定 ----------
