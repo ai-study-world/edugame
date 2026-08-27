@@ -26,6 +26,8 @@
     safety:  { name: '安全标识',   desc: '认识安全标志' },
     calendar: { name: '星期月份',   desc: '时间概念' },
     poem:    { name: '古诗词启蒙', desc: '背诵经典诗词' },
+    map:     { name: '认识地图',   desc: '地图小常识' },
+    colors:  { name: '认识颜色',   desc: '颜色认知' },
   };
   const STAR_KEY = 'edugame_stars';
   const STATS_KEY = 'edugame_stats';
@@ -143,8 +145,8 @@
     { key: 'lang',    name: '语言启蒙', games: ['pinyin', 'hanzi', 'poem'] },
     { key: 'memory',  name: '记忆观察', games: ['memory', 'spot'] },
     { key: 'logic',   name: '逻辑推理', games: ['pattern', 'direction'] },
-    { key: 'nature',  name: '自然认知', games: ['season', 'shadow', 'shapes', 'animal'] },
-    { key: 'social',  name: '社会认知', games: ['family', 'safety'] },
+    { key: 'nature',  name: '自然认知', games: ['season', 'shadow', 'shapes', 'animal', 'colors'] },
+    { key: 'social',  name: '社会认知', games: ['family', 'safety', 'map'] },
     { key: 'habit',   name: '行为习惯', games: ['behavior'] },
   ];
   // 计算各维度得分（0-100）
@@ -265,7 +267,7 @@
       const s = stats[g];
       const rate = statRate(g);
       const avgT = statAvgTime(g);
-      return { g, icon: { math: '🔢', count: '🐟', pinyin: '🔤', memory: '🧠', clock: '⏰', spot: '🔍', hanzi: '🀄', money: '💰', pattern: '🔢', season: '🍂', shadow: '🌓', shapes: '🔷', direction: '🧭', family: '👨‍👩‍👧', behavior: '✅', animal: '🐮', safety: '⚠️', calendar: '📅', poem: '📜' }[g], s, rate, avgT };
+      return { g, icon: { math: '🔢', count: '🐟', pinyin: '🔤', memory: '🧠', clock: '⏰', spot: '🔍', hanzi: '🀄', money: '💰', pattern: '🔢', season: '🍂', shadow: '🌓', shapes: '🔷', direction: '🧭', family: '👨‍👩‍👧', behavior: '✅', animal: '🐮', safety: '⚠️', calendar: '📅', poem: '📜', map: '🗺️', colors: '🎨' }[g], s, rate, avgT };
     });
     $('#reportList').innerHTML = rows.map(r => {
       if (!r.s || r.s.plays === 0) {
@@ -2066,6 +2068,239 @@
       `答对 ${poem.correct} / ${poem.total} 题`, s, () => { poem.round = 0; poem.correct = 0; renderPoem(); });
   }
 
+  // ============================================================
+  // 游戏20：认识地图
+  // ============================================================
+  let map = { round: 0, total: 8, correct: 0 };
+
+  const MAP_DATA = [
+    { q: '地图上，蓝色通常表示什么？', ans: '海洋/河流', options: ['海洋/河流', '森林', '沙漠', '高山'] },
+    { q: '地图上，绿色通常表示什么？', ans: '平原/森林', options: ['平原/森林', '海洋', '沙漠', '冰雪'] },
+    { q: '地图上，黄色通常表示什么？', ans: '沙漠/高原', options: ['沙漠/高原', '海洋', '森林', '城市'] },
+    { q: '地图上，白色通常表示什么？', ans: '冰雪', options: ['冰雪', '海洋', '沙漠', '森林'] },
+    { q: '地图上 ⭐ 五角星通常代表什么？', ans: '首都/重要城市', options: ['首都/重要城市', '海洋', '高山', '沙漠'] },
+    { q: '地图上一个小圆点通常代表什么？', ans: '城市', options: ['城市', '海洋', '沙漠', '河流'] },
+    { q: '看地图时，通常哪边是"上"？', ans: '北边', options: ['北边', '南边', '东边', '西边'] },
+    { q: '看地图时，哪边是"左"？', ans: '西边', options: ['西边', '东边', '北边', '南边'] },
+    { q: '地图上的"指南针"用来干什么？', ans: '辨别方向', options: ['辨别方向', '量距离', '看天气', '找星星'] },
+    { q: '我们国家的名字是？', ans: '中国', options: ['中国', '美国', '日本', '英国'] },
+    { q: '中国在地球的哪个洲？', ans: '亚洲', options: ['亚洲', '欧洲', '非洲', '美洲'] },
+    { q: '首都北京在哪个方向地图上找到？', ans: '北方', options: ['北方', '南方', '东方', '西方'] },
+  ];
+
+  function renderMap() {
+    const target = MAP_DATA[randInt(0, MAP_DATA.length - 1)];
+    const options = shuffle(target.options);
+    gameArea.innerHTML = `
+      <div class="game-hint">第 ${map.round + 1} / ${map.total} 题</div>
+      <div class="season-quiz">
+        <span class="season-big">🗺️</span>
+        <div class="game-hint">${target.q}</div>
+        <div class="season-options">
+          ${options.map(d => `<button class="season-opt" data-ans="${d}"><span class="se-name" style="font-size:1.3rem">${d}</span></button>`).join('')}
+        </div>
+      </div>
+    `;
+    gameArea.querySelectorAll('.season-opt').forEach(btn => {
+      btn.onclick = () => {
+        sfx.click();
+        if (btn.dataset.ans === target.ans) {
+          btn.classList.add('correct');
+          map.correct++;
+          sfx.correct();
+          gameArea.querySelectorAll('.season-opt').forEach(b => b.classList.add('disabled'));
+          setTimeout(() => {
+            map.round++;
+            if (map.round >= map.total) mapEnd();
+            else renderMap();
+          }, 700);
+        } else {
+          // 答错：标红 + 展示正确答案 + 自动跳下一题
+          handleWrong(btn, () => [...gameArea.querySelectorAll('.season-opt')].find(b => b.dataset.ans === target.ans) || null, () => {
+            map.round++;
+            if (map.round >= map.total) mapEnd();
+            else renderMap();
+          });
+        }
+      };
+    });
+  }
+
+  function mapEnd() {
+    const rate = map.correct / map.total;
+    let s = 1;
+    if (rate >= 0.9) s = 3; else if (rate >= 0.7) s = 2;
+    addStar('map', s);
+    recordGame('map', map.correct, map.total, Date.now() - gameStartTime);
+    showModal(rate >= 0.9 ? '🗺️' : rate >= 0.7 ? '🌟' : '💪',
+      rate >= 0.9 ? '地图小向导！' : rate >= 0.7 ? '很不错！' : '再认认',
+      `答对 ${map.correct} / ${map.total} 题`, s, () => { map.round = 0; map.correct = 0; renderMap(); });
+  }
+
+  // ============================================================
+  // 游戏21：认识颜色（色块认色 / 看色选名 / 生活物品 / 混色）
+  // ============================================================
+  let colors = { round: 0, total: 8, correct: 0 };
+
+  const COLOR_LIST = [
+    { name: '红色', hex: '#ef5350' },
+    { name: '橙色', hex: '#ff9800' },
+    { name: '黄色', hex: '#fdd835' },
+    { name: '绿色', hex: '#66bb6a' },
+    { name: '蓝色', hex: '#42a5f5' },
+    { name: '紫色', hex: '#ab47bc' },
+    { name: '粉色', hex: '#f48fb1' },
+    { name: '棕色', hex: '#8d6e63' },
+    { name: '白色', hex: '#fafafa' },
+    { name: '黑色', hex: '#37474f' },
+    { name: '灰色', hex: '#90a4ae' },
+    { name: '青色', hex: '#26c6da' },
+  ];
+  const COLOR_OBJECTS = [
+    { obj: '🍎', color: '红色' },
+    { obj: '🍊', color: '橙色' },
+    { obj: '🍌', color: '黄色' },
+    { obj: '🍏', color: '绿色' },
+    { obj: '🍇', color: '紫色' },
+    { obj: '🍑', color: '粉色' },
+    { obj: '🥥', color: '棕色' },
+    { obj: '🍋', color: '黄色' },
+    { obj: '🍓', color: '红色' },
+    { obj: '🫐', color: '蓝色' },
+  ];
+  const MIX_DATA = [
+    { q: '红色 + 蓝色 = ?', ans: '紫色' },
+    { q: '红色 + 黄色 = ?', ans: '橙色' },
+    { q: '黄色 + 蓝色 = ?', ans: '绿色' },
+    { q: '红色 + 白色 = ?', ans: '粉色' },
+    { q: '黑色 + 白色 = ?', ans: '灰色' },
+    { q: '蓝色 + 黄色 = ?', ans: '绿色' },
+  ];
+
+  function renderColors() {
+    const qType = randInt(0, 3);
+    let question = '', inner = '', answerKey = '', options = [];
+
+    if (qType === 0) {
+      // 看色块选颜色名
+      const c = COLOR_LIST[randInt(0, COLOR_LIST.length - 1)];
+      question = '这是什么颜色？';
+      inner = `<div style="width:80px;height:80px;border-radius:18px;background:${c.hex};display:inline-block;border:3px solid rgba(0,0,0,.1);box-shadow:0 8px 20px rgba(0,0,0,.15)"></div>`;
+      answerKey = c.name;
+      options = shuffle(COLOR_LIST.map(x => x.name));
+    } else if (qType === 1) {
+      // 看颜色名选色块
+      const c = COLOR_LIST[randInt(0, COLOR_LIST.length - 1)];
+      question = `找出「${c.name}」`;
+      inner = '';
+      answerKey = c.name;
+      const picks = shuffle(COLOR_LIST).slice(0, 4);
+      if (!picks.some(p => p.name === c.name)) picks[randInt(0, 3)] = c;
+      options = picks.map(p => p.name);
+      // 选项为色块按钮
+      gameArea.innerHTML = `
+        <div class="game-hint">第 ${colors.round + 1} / ${colors.total} 题</div>
+        <div class="season-quiz">
+          <span class="season-big">🎨</span>
+          <div class="game-hint">${question}</div>
+          <div class="color-pick-grid">
+            ${picks.map(p => `<button class="color-pick" data-ans="${p.name}" style="background:${p.hex}"></button>`).join('')}
+          </div>
+        </div>
+      `;
+      gameArea.querySelectorAll('.color-pick').forEach(btn => {
+        btn.onclick = () => {
+          sfx.click();
+          if (btn.dataset.ans === answerKey) {
+            btn.classList.add('correct');
+            colors.correct++;
+            sfx.correct();
+            gameArea.querySelectorAll('.color-pick').forEach(b => b.classList.add('disabled'));
+            setTimeout(() => {
+              colors.round++;
+              if (colors.round >= colors.total) colorsEnd();
+              else renderColors();
+            }, 700);
+          } else {
+            handleWrong(btn, () => [...gameArea.querySelectorAll('.color-pick')].find(b => b.dataset.ans === answerKey) || null, () => {
+              colors.round++;
+              if (colors.round >= colors.total) colorsEnd();
+              else renderColors();
+            });
+          }
+        };
+      });
+      return;
+    } else if (qType === 2) {
+      // 生活物品颜色
+      const o = COLOR_OBJECTS[randInt(0, COLOR_OBJECTS.length - 1)];
+      question = `${o.obj} 是什么颜色？`;
+      inner = `<span style="font-size:4.5rem">${o.obj}</span>`;
+      answerKey = o.color;
+      const wrongs = new Set();
+      wrongs.add(o.color);
+      while (wrongs.size < 4) wrongs.add(COLOR_LIST[randInt(0, COLOR_LIST.length - 1)].name);
+      options = shuffle([...wrongs]);
+    } else {
+      // 混色题
+      const m = MIX_DATA[randInt(0, MIX_DATA.length - 1)];
+      question = m.q;
+      inner = `<span style="font-size:3rem">🎨</span>`;
+      answerKey = m.ans;
+      const wrongs = new Set();
+      wrongs.add(m.ans);
+      while (wrongs.size < 4) wrongs.add(COLOR_LIST[randInt(0, COLOR_LIST.length - 1)].name);
+      options = shuffle([...wrongs]);
+    }
+
+    gameArea.innerHTML = `
+      <div class="game-hint">第 ${colors.round + 1} / ${colors.total} 题</div>
+      <div class="season-quiz">
+        <div class="shape-symbol" style="width:auto;height:auto;padding:14px 26px">${inner}</div>
+        <div class="game-hint">${question}</div>
+        <div class="season-options">
+          ${options.map(d => {
+            const c = COLOR_LIST.find(x => x.name === d);
+            return `<button class="season-opt" data-ans="${d}">${c ? `<span class="swatch" style="background:${c.hex}"></span>` : ''}<span class="se-name" style="font-size:1.2rem">${d}</span></button>`;
+          }).join('')}
+        </div>
+      </div>
+    `;
+    gameArea.querySelectorAll('.season-opt').forEach(btn => {
+      btn.onclick = () => {
+        sfx.click();
+        if (btn.dataset.ans === answerKey) {
+          btn.classList.add('correct');
+          colors.correct++;
+          sfx.correct();
+          gameArea.querySelectorAll('.season-opt').forEach(b => b.classList.add('disabled'));
+          setTimeout(() => {
+            colors.round++;
+            if (colors.round >= colors.total) colorsEnd();
+            else renderColors();
+          }, 700);
+        } else {
+          handleWrong(btn, () => [...gameArea.querySelectorAll('.season-opt')].find(b => b.dataset.ans === answerKey) || null, () => {
+            colors.round++;
+            if (colors.round >= colors.total) colorsEnd();
+            else renderColors();
+          });
+        }
+      };
+    });
+  }
+
+  function colorsEnd() {
+    const rate = colors.correct / colors.total;
+    let s = 1;
+    if (rate >= 0.9) s = 3; else if (rate >= 0.7) s = 2;
+    addStar('colors', s);
+    recordGame('colors', colors.correct, colors.total, Date.now() - gameStartTime);
+    showModal(rate >= 0.9 ? '🌈' : rate >= 0.7 ? '🌟' : '💪',
+      rate >= 0.9 ? '颜色魔法师！' : rate >= 0.7 ? '很不错！' : '再认认',
+      `答对 ${colors.correct} / ${colors.total} 题`, s, () => { colors.round = 0; colors.correct = 0; renderColors(); });
+  }
+
   // ---------- 渲染器注册 ----------
   const renderers = {
     math: renderMath,
@@ -2087,6 +2322,8 @@
     safety: renderSafety,
     calendar: renderCalendar,
     poem: renderPoem,
+    map: renderMap,
+    colors: renderColors,
   };
 
   // ---------- 事件绑定 ----------

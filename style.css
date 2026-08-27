@@ -101,6 +101,8 @@ body {
 .card[data-game="safety"] { border-top: 6px solid #f57c00; }
 .card[data-game="calendar"] { border-top: 6px solid #5c6bc0; }
 .card[data-game="poem"] { border-top: 6px solid #a1887f; }
+.card[data-game="map"] { border-top: 6px solid #66bb6a; }
+.card[data-game="colors"] { border-top: 6px solid #ff7043; }
 
 .reset-btn {
   display: block; margin: 30px auto 0; background: #fff; color: #94a3b8;
@@ -518,4 +520,26 @@ body {
   background: linear-gradient(135deg, #fdf6e3, #f5e6c8); border-radius: 16px;
   padding: 16px 30px; margin-bottom: 10px; box-shadow: 0 6px 16px rgba(0,0,0,.08);
   border-left: 6px solid #8d6e63;
+}
+
+/* ===== 认识颜色 - 色块选择 ===== */
+.color-pick-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+  max-width: 400px; margin: 0 auto 16px;
+}
+.color-pick {
+  width: 100%; aspect-ratio: 1; border-radius: 18px; border: 3px solid rgba(0,0,0,.12);
+  cursor: pointer; transition: .18s; box-shadow: 0 4px 10px rgba(0,0,0,.1);
+}
+.color-pick:hover { transform: scale(1.08); box-shadow: 0 8px 18px rgba(0,0,0,.2); }
+.color-pick:active { transform: scale(.92); }
+.color-pick.correct { border-color: var(--green); box-shadow: 0 0 0 4px rgba(76,175,80,.3); animation: pop .4s; }
+.color-pick.wrong { border-color: #ef5350; box-shadow: 0 0 0 4px rgba(239,83,80,.3); animation: shake .4s; }
+.color-pick.disabled { pointer-events: none; opacity: .7; }
+.color-pick.correct-highlight { border-color: var(--green); box-shadow: 0 0 0 4px rgba(76,175,80,.3); animation: pop .4s; }
+
+/* ===== 认识地图 ===== */
+.map-emoji { font-size: 4rem; display: block; margin: 6px 0; }
+@media (max-width: 520px) {
+  .color-pick-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
 }
