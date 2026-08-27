@@ -334,20 +334,24 @@
   }
 
   // 解锁引导弹窗（把解锁码输入框动态注入到 modal 里）
+  const PAY_QR = 'qr.JPG';  // 收款码图片文件名（放在项目根目录）
+  const PAY_AMOUNT = '9.9';
+  const PAY_CONTACT = '付款后请联系我发解锁码';  // 可改成你的微信号
   function showUnlockModal() {
     modalEmoji.textContent = '🔒';
     modalTitle.textContent = '付费解锁全部功能';
     modalText.innerHTML = `
-      <p style="margin-bottom:10px;line-height:1.8;text-align:left;font-size:.95rem;color:#475569">
-        💰 <b>9.9 元</b> 解锁全部 <b>${PAGE_ALL_GAMES.length - FREE_GAMES.length} 个</b> 付费游戏<br>
-        🆓 免费体验：数一数 · 认识颜色 · 认图形颜色<br>
-        <span style="color:#f57c00">📱 请用微信扫码支付后，输入解锁码</span>
-      </p>
-      <div class="qr-placeholder">
-        <div style="font-size:2.6rem">📱</div>
-        <div style="font-size:.85rem;color:#94a3b8;margin-top:4px">（这里放你的微信收款码图片）</div>
+      <div class="unlock-steps">
+        <div class="unlock-step"><span class="step-num">1</span><span>扫码支付 <b>¥${PAY_AMOUNT}</b></span></div>
+        <div class="unlock-step"><span class="step-num">2</span><span>${PAY_CONTACT}</span></div>
+        <div class="unlock-step"><span class="step-num">3</span><span>输入解锁码，永久解锁全部功能</span></div>
       </div>
-      <input type="text" class="unlock-input" id="unlockInput" placeholder="请输入解锁码" maxlength="30">
+      <div class="qr-box">
+        <img src="${PAY_QR}" alt="微信收款码" class="pay-qr">
+        <div class="qr-tip">⬆️ 长按识别 / 保存到手机再扫码支付</div>
+      </div>
+      <div class="free-tip">🆓 免费体验：数一数 · 认识颜色 · 认图形颜色</div>
+      <input type="text" class="unlock-input" id="unlockInput" placeholder="付款后请输入解锁码" maxlength="30">
       <div class="unlock-msg" id="unlockMsg"></div>
     `;
     const starLine = modal.querySelector('.modal-stars');
