@@ -22,6 +22,10 @@
     direction: { name: '找方向',   desc: '方位判断' },
     family:  { name: '亲属称谓',   desc: '家人怎么称呼' },
     behavior: { name: '行为判断',   desc: '什么行为不对' },
+    animal:  { name: '动物叫声',   desc: '听声音认动物' },
+    safety:  { name: '安全标识',   desc: '认识安全标志' },
+    calendar: { name: '星期月份',   desc: '时间概念' },
+    poem:    { name: '古诗词启蒙', desc: '背诵经典诗词' },
   };
   const STAR_KEY = 'edugame_stars';
   const STATS_KEY = 'edugame_stats';
@@ -135,12 +139,12 @@
   // ---------- 能力维度（雷达图 6 维） ----------
   const DIMENSIONS = [
     { key: 'math',    name: '数学运算', games: ['math', 'money', 'pattern'] },
-    { key: 'num',     name: '数感认知', games: ['count', 'clock'] },
-    { key: 'lang',    name: '语言启蒙', games: ['pinyin', 'hanzi'] },
+    { key: 'num',     name: '数感认知', games: ['count', 'clock', 'calendar'] },
+    { key: 'lang',    name: '语言启蒙', games: ['pinyin', 'hanzi', 'poem'] },
     { key: 'memory',  name: '记忆观察', games: ['memory', 'spot'] },
     { key: 'logic',   name: '逻辑推理', games: ['pattern', 'direction'] },
-    { key: 'nature',  name: '自然认知', games: ['season', 'shadow', 'shapes'] },
-    { key: 'social',  name: '社会认知', games: ['family'] },
+    { key: 'nature',  name: '自然认知', games: ['season', 'shadow', 'shapes', 'animal'] },
+    { key: 'social',  name: '社会认知', games: ['family', 'safety'] },
     { key: 'habit',   name: '行为习惯', games: ['behavior'] },
   ];
   // 计算各维度得分（0-100）
@@ -261,7 +265,7 @@
       const s = stats[g];
       const rate = statRate(g);
       const avgT = statAvgTime(g);
-      return { g, icon: { math: '🔢', count: '🐟', pinyin: '🔤', memory: '🧠', clock: '⏰', spot: '🔍', hanzi: '🀄', money: '💰', pattern: '🔢', season: '🍂', shadow: '🌓', shapes: '🔷', direction: '🧭', family: '👨‍👩‍👧', behavior: '✅' }[g], s, rate, avgT };
+      return { g, icon: { math: '🔢', count: '🐟', pinyin: '🔤', memory: '🧠', clock: '⏰', spot: '🔍', hanzi: '🀄', money: '💰', pattern: '🔢', season: '🍂', shadow: '🌓', shapes: '🔷', direction: '🧭', family: '👨‍👩‍👧', behavior: '✅', animal: '🐮', safety: '⚠️', calendar: '📅', poem: '📜' }[g], s, rate, avgT };
     });
     $('#reportList').innerHTML = rows.map(r => {
       if (!r.s || r.s.plays === 0) {
@@ -1747,6 +1751,321 @@
       `答对 ${behavior.correct} / ${behavior.total} 题`, s, () => { behavior.round = 0; behavior.correct = 0; renderBehavior(); });
   }
 
+  // ============================================================
+  // 游戏16：认识动物叫声
+  // ============================================================
+  let animal = { round: 0, total: 8, correct: 0 };
+
+  const ANIMAL_DATA = [
+    { emoji: '🐶', name: '小狗', sound: '汪汪汪' },
+    { emoji: '🐱', name: '小猫', sound: '喵喵喵' },
+    { emoji: '🐮', name: '奶牛', sound: '哞哞哞' },
+    { emoji: '🐏', name: '小羊', sound: '咩咩咩' },
+    { emoji: '🐷', name: '小猪', sound: '哼哼哼' },
+    { emoji: '🐔', name: '公鸡', sound: '喔喔喔' },
+    { emoji: '🦆', name: '鸭子', sound: '嘎嘎嘎' },
+    { emoji: '🐸', name: '青蛙', sound: '呱呱呱' },
+    { emoji: '🐴', name: '小马', sound: '嘶嘶嘶' },
+    { emoji: '🐦', name: '小鸟', sound: '叽叽喳' },
+    { emoji: '🦁', name: '狮子', sound: '嗷呜~' },
+    { emoji: '🐺', name: '小狼', sound: '嗷呜~' },
+  ];
+
+  function renderAnimal() {
+    const target = ANIMAL_DATA[randInt(0, ANIMAL_DATA.length - 1)];
+    const others = shuffle(ANIMAL_DATA.filter(a => a.name !== target.name)).slice(0, 3);
+    const options = shuffle([target, ...others]);
+    gameArea.innerHTML = `
+      <div class="game-hint">第 ${animal.round + 1} / ${animal.total} 题</div>
+      <div class="season-quiz">
+        <span class="season-big">🔊</span>
+        <div class="game-hint">谁在叫「${target.sound}」？</div>
+        <div class="animal-display">
+          <div class="animal-demo">${target.emoji}</div>
+        </div>
+        <div class="season-options">
+          ${options.map(d => `<button class="season-opt" data-ans="${d.name}"><span class="se-icon">${d.emoji}</span><span class="se-name">${d.name}</span></button>`).join('')}
+        </div>
+      </div>
+    `;
+    gameArea.querySelectorAll('.season-opt').forEach(btn => {
+      btn.onclick = () => {
+        sfx.click();
+        if (btn.dataset.ans === target.name) {
+          btn.classList.add('correct');
+          animal.correct++;
+          sfx.correct();
+          gameArea.querySelectorAll('.season-opt').forEach(b => b.classList.add('disabled'));
+          setTimeout(() => {
+            animal.round++;
+            if (animal.round >= animal.total) animalEnd();
+            else renderAnimal();
+          }, 700);
+        } else {
+          // 答错：标红 + 展示正确答案 + 自动跳下一题
+          handleWrong(btn, () => [...gameArea.querySelectorAll('.season-opt')].find(b => b.dataset.ans === target.name) || null, () => {
+            animal.round++;
+            if (animal.round >= animal.total) animalEnd();
+            else renderAnimal();
+          });
+        }
+      };
+    });
+  }
+
+  function animalEnd() {
+    const rate = animal.correct / animal.total;
+    let s = 1;
+    if (rate >= 0.9) s = 3; else if (rate >= 0.7) s = 2;
+    addStar('animal', s);
+    recordGame('animal', animal.correct, animal.total, Date.now() - gameStartTime);
+    showModal(rate >= 0.9 ? '🐾' : rate >= 0.7 ? '🌟' : '💪',
+      rate >= 0.9 ? '动物小博士！' : rate >= 0.7 ? '很不错！' : '再听听',
+      `答对 ${animal.correct} / ${animal.total} 题`, s, () => { animal.round = 0; animal.correct = 0; renderAnimal(); });
+  }
+
+  // ============================================================
+  // 游戏17：认识安全标识
+  // ============================================================
+  let safety = { round: 0, total: 8, correct: 0 };
+
+  // 用 emoji + 颜色块模拟常见安全标识（emoji 无专有安全标识字符，用符号化表达）
+  const SAFETY_DATA = [
+    { sign: '⚠️', name: '注意危险', desc: '前方有危险，要小心' },
+    { sign: '🚫', name: '禁止通行', desc: '这里不能走' },
+    { sign: '🛑', name: '红灯停', desc: '红灯亮了要停下' },
+    { sign: '🚸', name: '注意儿童', desc: '附近有小朋友出没' },
+    { sign: '🚻', name: '卫生间', desc: '可以上厕所的地方' },
+    { sign: '🏥', name: '医院', desc: '生病了去医院' },
+    { sign: '🚒', name: '消防', desc: '着火拨打119' },
+    { sign: '🚔', name: '警察', desc: '遇到困难找警察' },
+    { sign: '☢️', name: '辐射危险', desc: '有辐射，远离' },
+    { sign: '⚡', name: '当心触电', desc: '有电危险，别摸' },
+    { sign: '🚭', name: '禁止吸烟', desc: '这里不能抽烟' },
+    { sign: '📵', name: '禁止使用手机', desc: '这里不能玩手机' },
+  ];
+
+  function renderSafety() {
+    const target = SAFETY_DATA[randInt(0, SAFETY_DATA.length - 1)];
+    const others = shuffle(SAFETY_DATA.filter(s => s.name !== target.name)).slice(0, 3);
+    const options = shuffle([target, ...others]);
+    gameArea.innerHTML = `
+      <div class="game-hint">第 ${safety.round + 1} / ${safety.total} 题</div>
+      <div class="season-quiz">
+        <div class="safety-sign">${target.sign}</div>
+        <div class="game-hint">这个标识是什么意思？（${target.sign}）</div>
+        <div class="season-options">
+          ${options.map(d => `<button class="season-opt" data-ans="${d.name}"><span class="se-icon" style="font-size:1.6rem">${d.sign}</span><span class="se-name">${d.name}</span></button>`).join('')}
+        </div>
+      </div>
+    `;
+    gameArea.querySelectorAll('.season-opt').forEach(btn => {
+      btn.onclick = () => {
+        sfx.click();
+        if (btn.dataset.ans === target.name) {
+          btn.classList.add('correct');
+          safety.correct++;
+          sfx.correct();
+          gameArea.querySelectorAll('.season-opt').forEach(b => b.classList.add('disabled'));
+          setTimeout(() => {
+            safety.round++;
+            if (safety.round >= safety.total) safetyEnd();
+            else renderSafety();
+          }, 700);
+        } else {
+          // 答错：标红 + 展示正确答案 + 自动跳下一题
+          handleWrong(btn, () => [...gameArea.querySelectorAll('.season-opt')].find(b => b.dataset.ans === target.name) || null, () => {
+            safety.round++;
+            if (safety.round >= safety.total) safetyEnd();
+            else renderSafety();
+          });
+        }
+      };
+    });
+  }
+
+  function safetyEnd() {
+    const rate = safety.correct / safety.total;
+    let s = 1;
+    if (rate >= 0.9) s = 3; else if (rate >= 0.7) s = 2;
+    addStar('safety', s);
+    recordGame('safety', safety.correct, safety.total, Date.now() - gameStartTime);
+    showModal(rate >= 0.9 ? '🦺' : rate >= 0.7 ? '🌟' : '💪',
+      rate >= 0.9 ? '安全小卫士！' : rate >= 0.7 ? '很不错！' : '多认认',
+      `答对 ${safety.correct} / ${safety.total} 题`, s, () => { safety.round = 0; safety.correct = 0; renderSafety(); });
+  }
+
+  // ============================================================
+  // 游戏18：认识星期/月份
+  // ============================================================
+  let calendar = { round: 0, total: 8, correct: 0 };
+
+  const WEEK_DATA = [
+    { order: '星期一', prev: '星期日', next: '星期二' },
+    { order: '星期二', prev: '星期一', next: '星期三' },
+    { order: '星期三', prev: '星期二', next: '星期四' },
+    { order: '星期四', prev: '星期三', next: '星期五' },
+    { order: '星期五', prev: '星期四', next: '星期六' },
+    { order: '星期六', prev: '星期五', next: '星期日' },
+    { order: '星期日', prev: '星期六', next: '星期一' },
+  ];
+  const MONTH_ORDER = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
+
+  function renderCalendar() {
+    // 题型：0 = 星期排序，1 = 月份排序，2 = 节日归属
+    const qType = randInt(0, 2);
+    let question = '', answerKey = '', options = [];
+
+    if (qType === 0) {
+      // X 的后面是星期几？
+      const day = WEEK_DATA[randInt(0, WEEK_DATA.length - 1)];
+      question = `${day.order} 的后面是星期几？`;
+      answerKey = day.next;
+      options = shuffle([day.next, day.prev, ...WEEK_DATA.filter(d => d.order !== day.order && d.order !== day.prev && d.order !== day.next).map(d => d.order)].slice(0, 4));
+    } else if (qType === 1) {
+      // X 月的下一个月是？
+      const idx = randInt(0, 11);
+      const next = MONTH_ORDER[(idx + 1) % 12];
+      question = `${MONTH_ORDER[idx]} 的下一个月是？`;
+      answerKey = next;
+      const wrongs = new Set();
+      wrongs.add(next);
+      while (wrongs.size < 4) wrongs.add(MONTH_ORDER[randInt(0, 11)]);
+      options = shuffle([...wrongs]);
+    } else {
+      // 节日：儿童节是几月？
+      const fests = [
+        { name: '儿童节', month: '六月' },
+        { name: '国庆节', month: '十月' },
+        { name: '元旦', month: '一月' },
+        { name: '中秋节', month: '八月' },
+        { name: '教师节', month: '九月' },
+        { name: '劳动节', month: '五月' },
+      ];
+      const f = fests[randInt(0, fests.length - 1)];
+      question = `${f.name} 是几月？`;
+      answerKey = f.month;
+      const wrongs = new Set();
+      wrongs.add(f.month);
+      while (wrongs.size < 4) wrongs.add(MONTH_ORDER[randInt(0, 11)]);
+      options = shuffle([...wrongs]);
+    }
+
+    gameArea.innerHTML = `
+      <div class="game-hint">第 ${calendar.round + 1} / ${calendar.total} 题</div>
+      <div class="season-quiz">
+        <span class="season-big">📅</span>
+        <div class="game-hint">${question}</div>
+        <div class="season-options">
+          ${options.map(d => `<button class="season-opt" data-ans="${d}"><span class="se-name" style="font-size:1.3rem">${d}</span></button>`).join('')}
+        </div>
+      </div>
+    `;
+    gameArea.querySelectorAll('.season-opt').forEach(btn => {
+      btn.onclick = () => {
+        sfx.click();
+        if (btn.dataset.ans === answerKey) {
+          btn.classList.add('correct');
+          calendar.correct++;
+          sfx.correct();
+          gameArea.querySelectorAll('.season-opt').forEach(b => b.classList.add('disabled'));
+          setTimeout(() => {
+            calendar.round++;
+            if (calendar.round >= calendar.total) calendarEnd();
+            else renderCalendar();
+          }, 700);
+        } else {
+          // 答错：标红 + 展示正确答案 + 自动跳下一题
+          handleWrong(btn, () => [...gameArea.querySelectorAll('.season-opt')].find(b => b.dataset.ans === answerKey) || null, () => {
+            calendar.round++;
+            if (calendar.round >= calendar.total) calendarEnd();
+            else renderCalendar();
+          });
+        }
+      };
+    });
+  }
+
+  function calendarEnd() {
+    const rate = calendar.correct / calendar.total;
+    let s = 1;
+    if (rate >= 0.9) s = 3; else if (rate >= 0.7) s = 2;
+    addStar('calendar', s);
+    recordGame('calendar', calendar.correct, calendar.total, Date.now() - gameStartTime);
+    showModal(rate >= 0.9 ? '🗓️' : rate >= 0.7 ? '🌟' : '💪',
+      rate >= 0.9 ? '时间小达人！' : rate >= 0.7 ? '很不错！' : '再看看日历',
+      `答对 ${calendar.correct} / ${calendar.total} 题`, s, () => { calendar.round = 0; calendar.correct = 0; renderCalendar(); });
+  }
+
+  // ============================================================
+  // 游戏19：古诗词启蒙
+  // ============================================================
+  let poem = { round: 0, total: 6, correct: 0 };
+
+  const POEM_DATA = [
+    { line: '举头望明月', ans: '低头思故乡', poem: '静夜思', author: '李白' },
+    { line: '白日依山尽', ans: '黄河入海流', poem: '登鹳雀楼', author: '王之涣' },
+    { line: '春眠不觉晓', ans: '处处闻啼鸟', poem: '春晓', author: '孟浩然' },
+    { line: '锄禾日当午', ans: '汗滴禾下土', poem: '悯农', author: '李绅' },
+    { line: '床前明月光', ans: '疑是地上霜', poem: '静夜思', author: '李白' },
+    { line: '鹅鹅鹅', ans: '曲项向天歌', poem: '咏鹅', author: '骆宾王' },
+    { line: '离离原上草', ans: '一岁一枯荣', poem: '赋得古原草送别', author: '白居易' },
+    { line: '墙角数枝梅', ans: '凌寒独自开', poem: '梅花', author: '王安石' },
+    { line: '两个黄鹂鸣翠柳', ans: '一行白鹭上青天', poem: '绝句', author: '杜甫' },
+    { line: '远看山有色', ans: '近听水无声', poem: '画', author: '王维' },
+  ];
+
+  function renderPoem() {
+    const target = POEM_DATA[randInt(0, POEM_DATA.length - 1)];
+    const others = shuffle(POEM_DATA.filter(p => p.ans !== target.ans)).slice(0, 3);
+    const options = shuffle([target.ans, ...others.map(o => o.ans)]);
+    gameArea.innerHTML = `
+      <div class="game-hint">第 ${poem.round + 1} / ${poem.total} 题</div>
+      <div class="season-quiz">
+        <span class="season-big">📜</span>
+        <div class="poem-line">「${target.line}」</div>
+        <div class="game-hint">下一句是什么？（《${target.poem}》 ${target.author}）</div>
+        <div class="season-options">
+          ${options.map(d => `<button class="season-opt" data-ans="${d}"><span class="se-name" style="font-size:1.2rem">${d}</span></button>`).join('')}
+        </div>
+      </div>
+    `;
+    gameArea.querySelectorAll('.season-opt').forEach(btn => {
+      btn.onclick = () => {
+        sfx.click();
+        if (btn.dataset.ans === target.ans) {
+          btn.classList.add('correct');
+          poem.correct++;
+          sfx.correct();
+          gameArea.querySelectorAll('.season-opt').forEach(b => b.classList.add('disabled'));
+          setTimeout(() => {
+            poem.round++;
+            if (poem.round >= poem.total) poemEnd();
+            else renderPoem();
+          }, 700);
+        } else {
+          // 答错：标红 + 展示正确答案 + 自动跳下一题
+          handleWrong(btn, () => [...gameArea.querySelectorAll('.season-opt')].find(b => b.dataset.ans === target.ans) || null, () => {
+            poem.round++;
+            if (poem.round >= poem.total) poemEnd();
+            else renderPoem();
+          });
+        }
+      };
+    });
+  }
+
+  function poemEnd() {
+    const rate = poem.correct / poem.total;
+    let s = 1;
+    if (rate >= 0.9) s = 3; else if (rate >= 0.7) s = 2;
+    addStar('poem', s);
+    recordGame('poem', poem.correct, poem.total, Date.now() - gameStartTime);
+    showModal(rate >= 0.9 ? '🏮' : rate >= 0.7 ? '🌟' : '💪',
+      rate >= 0.9 ? '诗词小才子！' : rate >= 0.7 ? '很不错！' : '多读读',
+      `答对 ${poem.correct} / ${poem.total} 题`, s, () => { poem.round = 0; poem.correct = 0; renderPoem(); });
+  }
+
   // ---------- 渲染器注册 ----------
   const renderers = {
     math: renderMath,
@@ -1764,6 +2083,10 @@
     direction: renderDirection,
     family: renderFamily,
     behavior: renderBehavior,
+    animal: renderAnimal,
+    safety: renderSafety,
+    calendar: renderCalendar,
+    poem: renderPoem,
   };
 
   // ---------- 事件绑定 ----------
