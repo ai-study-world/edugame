@@ -319,7 +319,78 @@
     menuScreen.classList.add('active');
     refreshStars();
   }
+  // ---------- 付费解锁系统 ----------
+  const UNLOCK_KEY = 'edugame_unlocked';
+  const UNLOCK_CODE = '9.9HAPPY';  // 解锁码（出售时告知购买者）
+  const FREE_GAMES = ['count', 'colors', 'shapes'];  // 免费游戏：数一数、认识颜色、认图形颜色
+  function isUnlocked() { return localStorage.getItem(UNLOCK_KEY) === '1'; }
+  function isFreeGame(id) { return FREE_GAMES.includes(id); }
+  function checkUnlock(code) { return String(code).trim().toUpperCase() === UNLOCK_CODE; }
+  function doUnlock() {
+    localStorage.setItem(UNLOCK_KEY, '1');
+    // 刷新页面所有锁定的卡片样式
+    document.querySelectorAll('.card.locked').forEach(c => c.classList.remove('locked'));
+    if (typeof refreshStars === 'function') refreshStars();
+  }
+
+  // 解锁引导弹窗（把解锁码输入框动态注入到 modal 里）
+  function showUnlockModal() {
+    modalEmoji.textContent = '🔒';
+    modalTitle.textContent = '付费解锁全部功能';
+    modalText.innerHTML = `
+      <p style="margin-bottom:10px;line-height:1.8;text-align:left;font-size:.95rem;color:#475569">
+        💰 <b>9.9 元</b> 解锁全部 <b>${PAGE_ALL_GAMES.length - FREE_GAMES.length} 个</b> 付费游戏<br>
+        🆓 免费体验：数一数 · 认识颜色 · 认图形颜色<br>
+        <span style="color:#f57c00">📱 请用微信扫码支付后，输入解锁码</span>
+      </p>
+      <div class="qr-placeholder">
+        <div style="font-size:2.6rem">📱</div>
+        <div style="font-size:.85rem;color:#94a3b8;margin-top:4px">（这里放你的微信收款码图片）</div>
+      </div>
+      <input type="text" class="unlock-input" id="unlockInput" placeholder="请输入解锁码" maxlength="30">
+      <div class="unlock-msg" id="unlockMsg"></div>
+    `;
+    const starLine = modal.querySelector('.modal-stars');
+    if (starLine) starLine.remove();
+    modal.classList.remove('hidden');
+    // 按钮调整
+    modalBtn.textContent = '确认解锁';
+    modalBtn.onclick = () => {
+      const input = $('#unlockInput');
+      const msg = $('#unlockMsg');
+      if (!input) return;
+      if (checkUnlock(input.value)) {
+        doUnlock();
+        msg.textContent = '✅ 解锁成功！可以使用全部功能了';
+        msg.style.color = '#2e7d32';
+        setTimeout(() => {
+          modal.classList.add('hidden');
+          renderers[currentGame] && renderers[currentGame]();
+          // 解锁后如果当前是想玩的游戏，直接进入
+          if (currentGame && !isFreeGame(currentGame)) {
+            showGame(currentGame);
+          } else {
+            showMenu();
+          }
+        }, 1200);
+      } else {
+        msg.textContent = '❌ 解锁码错误，请核对后重试';
+        msg.style.color = '#d32f2f';
+        sfx.wrong();
+      }
+    };
+    modalBackBtn.textContent = '暂不解锁';
+    modalBackBtn.onclick = () => { modal.classList.add('hidden'); showMenu(); };
+    sfx.click();
+  }
+
   function showGame(id) {
+    // 付费门槛：非免费游戏必须已解锁
+    if (!isFreeGame(id) && !isUnlocked()) {
+      currentGame = id;
+      showUnlockModal();
+      return;
+    }
     currentGame = id;
     gameStartTime = Date.now();
     menuScreen.classList.remove('active');
@@ -2407,7 +2478,22 @@
   };
 
   // ---------- 初始化 ----------
+  function applyLockState() {
+    document.querySelectorAll('.card').forEach(card => {
+      const g = card.dataset.game;
+      if (g && !isFreeGame(g) && !isUnlocked()) {
+        card.classList.add('locked');
+        if (!card.querySelector('.lock-badge')) {
+          const badge = document.createElement('span');
+          badge.className = 'lock-badge';
+          badge.textContent = '🔒';
+          card.appendChild(badge);
+        }
+      }
+    });
+  }
   refreshStars();
+  applyLockState();
   // 预初始化音效上下文（用户首次交互时）
   document.addEventListener('click', ensureAudio, { once: true });
 })();

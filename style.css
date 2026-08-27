@@ -668,3 +668,28 @@ body {
 .parent-menu-item.danger:hover { background: #ffd7d6; }
 .parent-menu-item.cancel { background: transparent; color: #94a3b8; margin-bottom: 0; }
 .parent-menu-item.cancel:hover { background: #f8fafc; transform: none; }
+
+/* ===== 付费解锁 ===== */
+.card { position: relative; }
+.card.locked { opacity: .88; }
+.card.locked::after {
+  content: ''; position: absolute; inset: 0; background: rgba(255,255,255,.45);
+  border-radius: 20px; pointer-events: none;
+}
+.lock-badge {
+  position: absolute; top: 10px; right: 10px; z-index: 5;
+  background: linear-gradient(135deg, #ff9800, #f57c00); color: #fff;
+  font-size: .95rem; width: 34px; height: 34px; line-height: 34px; text-align: center;
+  border-radius: 50%; box-shadow: 0 3px 8px rgba(245,124,0,.45);
+}
+.unlock-input {
+  display: block; width: 100%; padding: 13px 16px; font-size: 1.05rem;
+  border: 2px solid #ffb74d; border-radius: 14px; outline: none; text-align: center;
+  font-family: inherit; margin: 12px 0 6px; letter-spacing: 1px; box-sizing: border-box;
+}
+.unlock-input:focus { border-color: #f57c00; box-shadow: 0 0 0 4px rgba(245,124,0,.15); }
+.unlock-msg { font-size: .92rem; min-height: 1.4em; margin-bottom: 8px; font-weight: 600; }
+.qr-placeholder {
+  background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 14px;
+  padding: 16px; margin: 6px 0 4px; text-align: center;
+}
