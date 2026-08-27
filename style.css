@@ -543,3 +543,18 @@ body {
 @media (max-width: 520px) {
   .color-pick-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
 }
+
+/* ===== 菜单分类区块 ===== */
+.menu-section { max-width: 960px; margin: 0 auto 30px; position: relative; z-index: 1; }
+.menu-section-title {
+  text-align: center; font-size: 1.5rem; font-weight: 800; color: #fff;
+  padding: 8px 24px; border-radius: 30px; display: inline-block;
+  margin: 0 auto 4px; background: linear-gradient(135deg, #ff8a65, #ff7043);
+  box-shadow: 0 5px 14px rgba(255,112,67,.3);
+}
+.menu-section:nth-of-type(2) .menu-section-title {
+  background: linear-gradient(135deg, #42a5f5, #5c6bc0);
+  box-shadow: 0 5px 14px rgba(92,107,192,.3);
+}
+.menu-section-title { display: block; width: fit-content; }
+.menu-section-desc { text-align: center; color: #8a9bb5; font-size: .9rem; margin-bottom: 16px; }
