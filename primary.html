@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>幼小衔接教学 · 趣味学习乐园</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!-- ===== 幼小衔接教学菜单 ===== -->
+<div id="menuScreen" class="screen active">
+  <div class="sky">
+    <div class="sun"></div>
+    <div class="cloud c1"></div>
+    <div class="cloud c2"></div>
+  </div>
+  <h1 class="title">🎒 幼小衔接教学</h1>
+  <p class="subtitle">适合 5-7 岁 · 拼音识字与数学启蒙</p>
+  <div class="star-total">⭐ 我的星星：<span id="totalStars">0</span></div>
+  <div class="page-actions">
+    <a class="btn back-btn" href="index.html">🏠 返回首页</a>
+    <button class="btn report-btn" id="reportBtn">📊 学习报告</button>
+  </div>
+  <div class="menu-grid">
+    <div class="card" data-game="math">
+      <div class="card-icon">🔢</div>
+      <div class="card-name">口算小达人</div>
+      <div class="card-desc">10以内加减法</div>
+      <div class="card-stars" id="stars-math">☆☆☆</div>
+    </div>
+    <div class="card" data-game="pinyin">
+      <div class="card-icon">🔤</div>
+      <div class="card-name">拼音大闯关</div>
+      <div class="card-desc">声母韵母配对</div>
+      <div class="card-stars" id="stars-pinyin">☆☆☆</div>
+    </div>
+    <div class="card" data-game="hanzi">
+      <div class="card-icon">🀄</div>
+      <div class="card-name">汉字启蒙</div>
+      <div class="card-desc">象形识字</div>
+      <div class="card-stars" id="stars-hanzi">☆☆☆</div>
+    </div>
+    <div class="card" data-game="clock">
+      <div class="card-icon">⏰</div>
+      <div class="card-name">认识钟表</div>
+      <div class="card-desc">读出时间</div>
+      <div class="card-stars" id="stars-clock">☆☆☆</div>
+    </div>
+    <div class="card" data-game="money">
+      <div class="card-icon">💰</div>
+      <div class="card-name">认识人民币</div>
+      <div class="card-desc">钱币换算</div>
+      <div class="card-stars" id="stars-money">☆☆☆</div>
+    </div>
+    <div class="card" data-game="pattern">
+      <div class="card-icon">🔢</div>
+      <div class="card-name">找规律</div>
+      <div class="card-desc">序列推理</div>
+      <div class="card-stars" id="stars-pattern">☆☆☆</div>
+    </div>
+    <div class="card" data-game="direction">
+      <div class="card-icon">🧭</div>
+      <div class="card-name">找方向</div>
+      <div class="card-desc">方位判断</div>
+      <div class="card-stars" id="stars-direction">☆☆☆</div>
+    </div>
+    <div class="card" data-game="safety">
+      <div class="card-icon">⚠️</div>
+      <div class="card-name">安全标识</div>
+      <div class="card-desc">认识安全标志</div>
+      <div class="card-stars" id="stars-safety">☆☆☆</div>
+    </div>
+    <div class="card" data-game="calendar">
+      <div class="card-icon">📅</div>
+      <div class="card-name">星期月份</div>
+      <div class="card-desc">时间概念</div>
+      <div class="card-stars" id="stars-calendar">☆☆☆</div>
+    </div>
+    <div class="card" data-game="poem">
+      <div class="card-icon">📜</div>
+      <div class="card-name">古诗词启蒙</div>
+      <div class="card-desc">背诵经典诗词</div>
+      <div class="card-stars" id="stars-poem">☆☆☆</div>
+    </div>
+    <div class="card" data-game="map">
+      <div class="card-icon">🗺️</div>
+      <div class="card-name">认识地图</div>
+      <div class="card-desc">地图小常识</div>
+      <div class="card-stars" id="stars-map">☆☆☆</div>
+    </div>
+  </div>
+  <div class="menu-actions">
+    <button class="btn reset-btn" id="resetBtn">🔄 重置星星</button>
+  </div>
+</div>
+
+<!-- ===== 家长学习报告屏 ===== -->
+<div id="reportScreen" class="screen">
+  <div class="game-topbar">
+    <button class="btn back-btn" id="reportBackBtn">← 返回</button>
+    <div class="game-title">📊 学习报告</div>
+    <div class="game-score">⭐ <span id="reportTotalStars">0</span></div>
+  </div>
+  <div class="report-summary" id="reportSummary"></div>
+  <div class="report-body">
+    <div class="report-panel">
+      <div class="report-panel-title">能力雷达图</div>
+      <canvas id="radarCanvas" width="360" height="300"></canvas>
+      <div class="radar-legend" id="radarLegend"></div>
+    </div>
+    <div class="report-panel">
+      <div class="report-panel-title">各游戏表现</div>
+      <div class="report-list" id="reportList"></div>
+    </div>
+  </div>
+  <div class="report-actions">
+    <button class="btn ghost-btn" id="reportResetBtn">🗑️ 清除全部记录</button>
+  </div>
+</div>
+
+<!-- ===== 游戏容器 ===== -->
+<div id="gameScreen" class="screen">
+  <div class="game-topbar">
+    <button class="btn back-btn" id="backBtn">← 返回</button>
+    <div class="game-title" id="gameTitle"></div>
+    <div class="game-score">⭐ <span id="gameStars">0</span></div>
+  </div>
+  <div id="gameArea"></div>
+</div>
+
+<!-- ===== 弹窗 ===== -->
+<div id="modal" class="modal hidden">
+  <div class="modal-box">
+    <div class="modal-emoji" id="modalEmoji">🎉</div>
+    <div class="modal-title" id="modalTitle"></div>
+    <div class="modal-text" id="modalText"></div>
+    <button class="btn primary-btn" id="modalBtn">再来一局</button>
+    <button class="btn ghost-btn" id="modalBackBtn">返回首页</button>
+  </div>
+</div>
+
+<!-- 音效 -->
+<audio id="snd-correct" preload="auto"></audio>
+<audio id="snd-wrong" preload="auto"></audio>
+<audio id="snd-win" preload="auto"></audio>
+<audio id="snd-click" preload="auto"></audio>
+
+<script src="game.js"></script>
+</body>
+</html>

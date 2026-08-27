@@ -29,6 +29,20 @@
     map:     { name: '认识地图',   desc: '地图小常识' },
     colors:  { name: '认识颜色',   desc: '颜色认知' },
   };
+
+  // ---------- 页面分类 ----------
+  // preschool.html = 幼儿学习启蒙；primary.html = 幼小衔接教学；index.html = 全部
+  const PAGE_PRESCHOOL_GAMES = ['count', 'colors', 'shapes', 'animal', 'shadow', 'spot', 'memory', 'season', 'behavior', 'family'];
+  const PAGE_PRIMARY_GAMES = ['math', 'pinyin', 'hanzi', 'clock', 'money', 'pattern', 'direction', 'safety', 'calendar', 'poem', 'map'];
+  const PAGE_ALL_GAMES = [...PAGE_PRESCHOOL_GAMES, ...PAGE_PRIMARY_GAMES];
+  const PAGE_BY_URL = {
+    'preschool.html': PAGE_PRESCHOOL_GAMES,
+    'primary.html': PAGE_PRIMARY_GAMES,
+    'index.html': PAGE_ALL_GAMES,
+  };
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  const PAGE_GAMES = PAGE_BY_URL[currentPage] || PAGE_ALL_GAMES;
+
   const STAR_KEY = 'edugame_stars';
   const STATS_KEY = 'edugame_stats';
 
@@ -81,10 +95,14 @@
   function saveStars() { localStorage.setItem(STAR_KEY, JSON.stringify(stars)); }
   function totalStars() { return Object.values(stars).reduce((a, b) => a + (b || 0), 0); }
   function refreshStars() {
-    $('#totalStars').textContent = totalStars();
-    for (const g of Object.keys(GAMES)) {
-      const n = stars[g] || 0;
-      $('#stars-' + g).textContent = '★'.repeat(n) + '☆'.repeat(3 - n);
+    const el = $('#totalStars');
+    if (el) el.textContent = totalStars();
+    for (const g of PAGE_GAMES) {
+      const starEl = $('#stars-' + g);
+      if (starEl) {
+        const n = stars[g] || 0;
+        starEl.textContent = '★'.repeat(n) + '☆'.repeat(3 - n);
+      }
     }
   }
   function addStar(gameId, count = 1) {
@@ -262,8 +280,8 @@
     ctx.scale(dpr, dpr);
     drawRadar(ctx, 360, 300, scores);
     $('#radarLegend').innerHTML = scores.map((s, i) => `<span><i style="background:#26a69a"></i>${s.name}</span>`).join('');
-    // 游戏列表
-    const rows = Object.keys(GAMES).map(g => {
+    // 游戏列表（只显示当前页面的游戏）
+    const rows = PAGE_GAMES.map(g => {
       const s = stats[g];
       const rate = statRate(g);
       const avgT = statAvgTime(g);
@@ -290,6 +308,11 @@
   let currentGame = null;
   let gameStartTime = 0;
   function showMenu() {
+    // 分类页（preschool/primary）的"首页"即 index.html；index.html 的"菜单"就是自身菜单屏
+    if (currentPage !== 'index.html') {
+      window.location.href = 'index.html';
+      return;
+    }
     gameScreen.classList.remove('active');
     reportScreen.classList.remove('active');
     menuScreen.classList.add('active');

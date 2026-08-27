@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<!-- ===== 主菜单 ===== -->
+<!-- ===== 分类首页 ===== -->
 <div id="menuScreen" class="screen active">
   <div class="sky">
     <div class="sun"></div>
@@ -15,146 +15,27 @@
     <div class="cloud c2"></div>
   </div>
   <h1 class="title">🌈 趣味学习乐园</h1>
-  <p class="subtitle">幼小衔接 · 边玩边学</p>
+  <p class="subtitle">幼小衔接 · 边玩边学 · 共 21 个趣味小游戏</p>
   <div class="star-total">⭐ 我的星星：<span id="totalStars">0</span></div>
-  <div class="menu-section">
-    <div class="menu-section-title">🧸 幼儿学习启蒙</div>
-    <div class="menu-section-desc">适合 3-5 岁 · 基础认知与生活常识</div>
-    <div class="menu-grid">
-    <div class="card" data-game="count">
-      <div class="card-icon">🐟</div>
-      <div class="card-name">数一数</div>
-      <div class="card-desc">点物数数</div>
-      <div class="card-stars" id="stars-count">☆☆☆</div>
-    </div>
-    <div class="card" data-game="colors">
-      <div class="card-icon">🎨</div>
-      <div class="card-name">认识颜色</div>
-      <div class="card-desc">颜色认知</div>
-      <div class="card-stars" id="stars-colors">☆☆☆</div>
-    </div>
-    <div class="card" data-game="shapes">
-      <div class="card-icon">🔷</div>
-      <div class="card-name">认图形颜色</div>
-      <div class="card-desc">图形颜色认知</div>
-      <div class="card-stars" id="stars-shapes">☆☆☆</div>
-    </div>
-    <div class="card" data-game="animal">
-      <div class="card-icon">🐮</div>
-      <div class="card-name">动物叫声</div>
-      <div class="card-desc">听声音认动物</div>
-      <div class="card-stars" id="stars-animal">☆☆☆</div>
-    </div>
-    <div class="card" data-game="shadow">
-      <div class="card-icon">🌓</div>
-      <div class="card-name">找影子</div>
-      <div class="card-desc">影子配对</div>
-      <div class="card-stars" id="stars-shadow">☆☆☆</div>
-    </div>
-    <div class="card" data-game="spot">
-      <div class="card-icon">🔍</div>
-      <div class="card-name">找不同</div>
-      <div class="card-desc">观察找茬</div>
-      <div class="card-stars" id="stars-spot">☆☆☆</div>
-    </div>
-    <div class="card" data-game="memory">
-      <div class="card-icon">🧠</div>
-      <div class="card-name">记忆翻牌</div>
-      <div class="card-desc">动物配对</div>
-      <div class="card-stars" id="stars-memory">☆☆☆</div>
-    </div>
-    <div class="card" data-game="season">
-      <div class="card-icon">🍂</div>
-      <div class="card-name">认识四季</div>
-      <div class="card-desc">季节特征</div>
-      <div class="card-stars" id="stars-season">☆☆☆</div>
-    </div>
-    <div class="card" data-game="behavior">
-      <div class="card-icon">✅</div>
-      <div class="card-name">行为判断</div>
-      <div class="card-desc">什么行为不对</div>
-      <div class="card-stars" id="stars-behavior">☆☆☆</div>
-    </div>
-    <div class="card" data-game="family">
-      <div class="card-icon">👨‍👩‍👧</div>
-      <div class="card-name">亲属称谓</div>
-      <div class="card-desc">家人怎么称呼</div>
-      <div class="card-stars" id="stars-family">☆☆☆</div>
-    </div>
-    </div>
+
+  <!-- 分类入口 -->
+  <div class="category-grid">
+    <a class="category-card cat-preschool" href="preschool.html">
+      <div class="category-emoji">🧸</div>
+      <div class="category-name">幼儿学习启蒙</div>
+      <div class="category-desc">适合 3-5 岁</div>
+      <div class="category-games">数数 · 颜色 · 动物叫声 · 找不同 · 行为判断 …</div>
+      <div class="category-btn">进入学习 →</div>
+    </a>
+    <a class="category-card cat-primary" href="primary.html">
+      <div class="category-emoji">🎒</div>
+      <div class="category-name">幼小衔接教学</div>
+      <div class="category-desc">适合 5-7 岁</div>
+      <div class="category-games">口算 · 拼音 · 汉字 · 钟表 · 人民币 · 古诗 …</div>
+      <div class="category-btn">进入学习 →</div>
+    </a>
   </div>
-  <div class="menu-section">
-    <div class="menu-section-title">🎒 幼小衔接教学</div>
-    <div class="menu-section-desc">适合 5-7 岁 · 拼音识字与数学启蒙</div>
-    <div class="menu-grid">
-    <div class="card" data-game="math">
-      <div class="card-icon">🔢</div>
-      <div class="card-name">口算小达人</div>
-      <div class="card-desc">10以内加减法</div>
-      <div class="card-stars" id="stars-math">☆☆☆</div>
-    </div>
-    <div class="card" data-game="pinyin">
-      <div class="card-icon">🔤</div>
-      <div class="card-name">拼音大闯关</div>
-      <div class="card-desc">声母韵母配对</div>
-      <div class="card-stars" id="stars-pinyin">☆☆☆</div>
-    </div>
-    <div class="card" data-game="hanzi">
-      <div class="card-icon">🀄</div>
-      <div class="card-name">汉字启蒙</div>
-      <div class="card-desc">象形识字</div>
-      <div class="card-stars" id="stars-hanzi">☆☆☆</div>
-    </div>
-    <div class="card" data-game="clock">
-      <div class="card-icon">⏰</div>
-      <div class="card-name">认识钟表</div>
-      <div class="card-desc">读出时间</div>
-      <div class="card-stars" id="stars-clock">☆☆☆</div>
-    </div>
-    <div class="card" data-game="money">
-      <div class="card-icon">💰</div>
-      <div class="card-name">认识人民币</div>
-      <div class="card-desc">钱币换算</div>
-      <div class="card-stars" id="stars-money">☆☆☆</div>
-    </div>
-    <div class="card" data-game="pattern">
-      <div class="card-icon">🔢</div>
-      <div class="card-name">找规律</div>
-      <div class="card-desc">序列推理</div>
-      <div class="card-stars" id="stars-pattern">☆☆☆</div>
-    </div>
-    <div class="card" data-game="direction">
-      <div class="card-icon">🧭</div>
-      <div class="card-name">找方向</div>
-      <div class="card-desc">方位判断</div>
-      <div class="card-stars" id="stars-direction">☆☆☆</div>
-    </div>
-    <div class="card" data-game="safety">
-      <div class="card-icon">⚠️</div>
-      <div class="card-name">安全标识</div>
-      <div class="card-desc">认识安全标志</div>
-      <div class="card-stars" id="stars-safety">☆☆☆</div>
-    </div>
-    <div class="card" data-game="calendar">
-      <div class="card-icon">📅</div>
-      <div class="card-name">星期月份</div>
-      <div class="card-desc">时间概念</div>
-      <div class="card-stars" id="stars-calendar">☆☆☆</div>
-    </div>
-    <div class="card" data-game="poem">
-      <div class="card-icon">📜</div>
-      <div class="card-name">古诗词启蒙</div>
-      <div class="card-desc">背诵经典诗词</div>
-      <div class="card-stars" id="stars-poem">☆☆☆</div>
-    </div>
-    <div class="card" data-game="map">
-      <div class="card-icon">🗺️</div>
-      <div class="card-name">认识地图</div>
-      <div class="card-desc">地图小常识</div>
-      <div class="card-stars" id="stars-map">☆☆☆</div>
-    </div>
-    </div>
-  </div>
+
   <div class="menu-actions">
     <button class="btn report-btn" id="reportBtn">📊 家长学习报告</button>
     <button class="btn reset-btn" id="resetBtn">🔄 重置星星</button>
@@ -185,7 +66,7 @@
   </div>
 </div>
 
-<!-- ===== 游戏容器（动态注入） ===== -->
+<!-- ===== 游戏容器（首页不直接用，但保留以防万一） ===== -->
 <div id="gameScreen" class="screen">
   <div class="game-topbar">
     <button class="btn back-btn" id="backBtn">← 返回</button>
