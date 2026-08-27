@@ -321,16 +321,49 @@
   }
   // ---------- 付费解锁系统 ----------
   const UNLOCK_KEY = 'edugame_unlocked';
-  const UNLOCK_CODE = '9.9HAPPY';  // 解锁码（出售时告知购买者）
+  // Supabase 云端多码（真防转发）；未配置时回退本地单码
+  const SUPABASE_URL = '';   // 从 supabase.md 读取后填入，如 https://xxx.supabase.co
+  const SUPABASE_ANON_KEY = '';
+  const UNLOCK_CODE = '9.9HAPPY';  // 本地回退解锁码（Supabase 未配置时用）
   const FREE_GAMES = ['count', 'colors', 'shapes'];  // 免费游戏：数一数、认识颜色、认图形颜色
   function isUnlocked() { return localStorage.getItem(UNLOCK_KEY) === '1'; }
   function isFreeGame(id) { return FREE_GAMES.includes(id); }
+  // 本地单码校验（回退用）
   function checkUnlock(code) { return String(code).trim().toUpperCase() === UNLOCK_CODE; }
   function doUnlock() {
     localStorage.setItem(UNLOCK_KEY, '1');
     // 刷新页面所有锁定的卡片样式
     document.querySelectorAll('.card.locked').forEach(c => c.classList.remove('locked'));
     if (typeof refreshStars === 'function') refreshStars();
+  }
+  // Supabase 云端校验解锁码（一次有效，防转发）
+  // resolve: (result) => void, result = { ok:boolean, reason?: 'invalid'|'used'|'network', code?:string }
+  async function cloudRedeem(code) {
+    const raw = String(code).trim();
+    if (!raw) return { ok: false, reason: 'invalid' };
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+      // 未配置云端：回退本地单码
+      return checkUnlock(raw) ? { ok: true, code: raw } : { ok: false, reason: 'invalid' };
+    }
+    try {
+      const resp = await fetch(`${SUPABASE_URL}/rest/v1/rpc/redeem_code`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({ p_code: raw }),
+      });
+      if (!resp.ok) {
+        // RPC 权限问题等
+        return { ok: false, reason: 'network' };
+      }
+      const data = await resp.json();
+      return data && data.ok === true ? { ok: true, code: data.code } : { ok: false, reason: (data && data.reason) || 'invalid' };
+    } catch (e) {
+      return { ok: false, reason: 'network' };
+    }
   }
 
   // 解锁引导弹窗（把解锁码输入框动态注入到 modal 里）
@@ -359,11 +392,18 @@
     modal.classList.remove('hidden');
     // 按钮调整
     modalBtn.textContent = '确认解锁';
-    modalBtn.onclick = () => {
+    modalBtn.onclick = async () => {
       const input = $('#unlockInput');
       const msg = $('#unlockMsg');
       if (!input) return;
-      if (checkUnlock(input.value)) {
+      const code = input.value;
+      if (!code.trim()) { msg.textContent = '请输入解锁码'; msg.style.color = '#d32f2f'; return; }
+      modalBtn.disabled = true;
+      modalBtn.textContent = '验证中…';
+      msg.textContent = '⏳ 正在核对解锁码…';
+      msg.style.color = '#64748b';
+      const result = await cloudRedeem(code);
+      if (result.ok) {
         doUnlock();
         msg.textContent = '✅ 解锁成功！可以使用全部功能了';
         msg.style.color = '#2e7d32';
@@ -378,8 +418,18 @@
           }
         }, 1200);
       } else {
-        msg.textContent = '❌ 解锁码错误，请核对后重试';
-        msg.style.color = '#d32f2f';
+        modalBtn.disabled = false;
+        modalBtn.textContent = '确认解锁';
+        if (result.reason === 'used') {
+          msg.textContent = '❌ 此解锁码已被使用过，请联系卖家';
+          msg.style.color = '#d32f2f';
+        } else if (result.reason === 'network') {
+          msg.textContent = '❌ 网络异常，请稍后重试或检查网络';
+          msg.style.color = '#f57c00';
+        } else {
+          msg.textContent = '❌ 解锁码无效，请核对后重试';
+          msg.style.color = '#d32f2f';
+        }
         sfx.wrong();
       }
     };
